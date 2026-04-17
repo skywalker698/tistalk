@@ -1,167 +1,117 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-
-<title>Tisapprove</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Approve-Tis</title>
 <style>
-
-*{
-box-sizing:border-box;
-}
-
-body{
-margin:0;
-font-family:system-ui,-apple-system;
-height:100vh;
-overflow:hidden;
-background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-color:white;
-}
-
-/* splash */
-
-#splash{
-position:absolute;
-width:100%;
-height:100%;
-display:flex;
-flex-direction:column;
-justify-content:center;
-align-items:center;
-text-align:center;
-backdrop-filter:blur(10px);
-}
-
-.logo{
-font-size:32px;
-font-weight:600;
-letter-spacing:2px;
-margin-bottom:10px;
-animation:fade 1.5s ease;
-}
-
-.subtitle{
-opacity:.8;
-margin-bottom:40px;
-animation:fade 2s ease;
-}
-
-/* loading bar */
-
-.loader{
-width:160px;
-height:4px;
-background:rgba(255,255,255,.2);
-border-radius:10px;
-overflow:hidden;
-}
-
-.bar{
-height:100%;
-width:0%;
-background:linear-gradient(90deg,#00c6ff,#0072ff);
-animation:load 3s linear forwards;
-}
-
-@keyframes load{
-0%{width:0}
-100%{width:100%}
-}
-
-@keyframes fade{
-from{
-opacity:0;
-transform:translateY(20px);
-}
-to{
-opacity:1;
-transform:translateY(0);
-}
-}
-
-/* iframe */
-
-iframe{
-position:absolute;
-top:0;
-left:0;
-width:100%;
-height:100%;
-border:none;
-display:none;
-background:white;
-}
-
-/* floating button */
-
-.menu{
-position:absolute;
-bottom:20px;
-right:20px;
-display:none;
-}
-
-.menu button{
-border:none;
-background:#0072ff;
-color:white;
-padding:12px 16px;
-border-radius:40px;
-font-size:14px;
-box-shadow:0 6px 15px rgba(0,0,0,.3);
-}
-
+  body, html {
+    margin: 0;
+    height: 100%;
+    width: 100%;
+    background: #f0f0f0;
+    font-family: sans-serif;
+    overflow: hidden;
+  }
+  #loader {
+    position: fixed;
+    inset: 0; /* shorthand top:0; left:0; right:0; bottom:0 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    z-index: 999;
+    transition: opacity 1s ease;
+    opacity: 1;
+  }
+  #loader.fadeout {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .bar-loader {
+    width: 120px;
+    max-width: 60%;
+    height: 14px;
+    background: #ececec;
+    border-radius: 7px;
+    overflow: hidden;
+    position: relative;
+  }
+  .bar-inner {
+    width: 40px;
+    height: 100%;
+    background: #4285f4;
+    border-radius: 7px;
+    position: absolute;
+    left: -40px;
+    animation: barmove 1.5s infinite linear;
+  }
+  @keyframes barmove {
+    0% { left: -40px;}
+    100% { left: 120px;}
+  }
+  #content-iframe {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    opacity: 0;
+    transition: opacity 0.8s cubic-bezier(.4,0,.2,1);
+    z-index: 1;
+  }
+  #content-iframe.visible {
+    opacity: 1;
+  }
 </style>
-
 </head>
-
 <body>
-
-<div id="splash">
-
-<div class="logo">
-App Smell Pak-Mhen
+<div id="loader">
+  <div class="bar-loader">
+    <div class="bar-inner"></div>
+  </div>
 </div>
-
-<div class="subtitle">
-Loading To...Calgate.
-</div>
-
-<div class="loader">
-<div class="bar"></div>
-</div>
-
-</div>
-
-<iframe id="app"></iframe>
-
-
-
+<iframe id="content-iframe"
+        src="https://script.google.com/macros/s/AKfycbwu3FSaDGq7jtK-XOKODHMt9fKwYcf7nN9yEaroph0Do9cfzpC6TJkbqX_lEooX1xZz/exec">
+</iframe>
 <script>
+const loader = document.getElementById('loader');
+  const iframe = document.getElementById('content-iframe');
 
-const URL="https://script.google.com/macros/s/AKfycbz43ywn6jNbUsBiCfj8g8mlbKWjBtiJNAZqYslQiNamJBA1y5LlhDOQsAaSEu3TRo24/exec"
+  setTimeout(() => {
+    loader.classList.add('fadeout');
+    setTimeout(() => {
+      loader.style.display = 'none';
+      iframe.classList.add('visible');
+    }, 1000);
+  }, 1500);
 
-setTimeout(()=>{
+  // ==============================
+  // 🔒 ป้องกันปุ่มย้อนกลับ (Mobile Back)
+  // ==============================
 
-document.getElementById("splash").style.display="none"
+  // push state ครั้งแรก
+  history.pushState(null, null, location.href);
 
-const frame=document.getElementById("app")
+  window.addEventListener('popstate', function (event) {
+    const confirmExit = confirm('ต้องการออกจากหน้านี้หรือไม่ ?');
 
-frame.style.display="block"
+    if (confirmExit) {
+      // อนุญาตให้ย้อนกลับจริง
+      history.back();
+    } else {
+      // กันไม่ให้ย้อนกลับ
+      history.pushState(null, null, location.href);
+    }
+  });
 
-frame.src=URL
-
-document.querySelector(".menu").style.display="block"
-
-},3200)
-
-
-
+  // ==============================
+  // 🔒 กัน reload / ปิด tab (เสริม)
+  // ==============================
+  window.addEventListener('beforeunload', function (e) {
+    e.preventDefault();
+    e.returnValue = '';
+  });
 </script>
-
 </body>
 </html>
